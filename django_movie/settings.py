@@ -131,7 +131,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-CKEDITOR_UPLOAD_PATH = "/upload"
+CKEDITOR_UPLOAD_PATH = "uploads/"
 
 
 
@@ -169,7 +169,7 @@ CKEDITOR_CONFIGS = {
                 # put the name of your editor.ui.addButton here
                 'Preview',
                 'Maximize',
-                'Youtube',
+
 
             ]},
         ],
@@ -197,7 +197,7 @@ CKEDITOR_CONFIGS = {
             'dialog',
             'dialogui',
             'elementspath'
-            'Youtube'
+
         ]),
     }
 }
