@@ -1,7 +1,7 @@
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.views.generic.base import View
 
 from .models import Movie, Category, Actor, Genre, Rating
@@ -22,11 +22,6 @@ class MoviesView(GenreYear, ListView):
     model = Movie
     queryset = Movie.objects.filter(draft=False)
 
-    def get_context_data(self, *args, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        context["categories"] = Category.objects.all()
-        return context
-
 
 class MovieDetailView(GenreYear, DetailView):
     """Полное описание фильма"""
@@ -35,7 +30,7 @@ class MovieDetailView(GenreYear, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["star_form"] = RatingForm
+        context["star_form"] = RatingForm()
         return context
 
 
@@ -54,9 +49,9 @@ class AddReview(View):
 
 
 class ActorView(GenreYear, DetailView):
-    """Вывод информации о актёре"""
+    """Вывод информации о актере"""
     model = Actor
-    template_name = "movies/actor.html"
+    template_name = 'movies/actor.html'
     slug_field = "name"
 
 
@@ -65,9 +60,23 @@ class FilterMoviesView(GenreYear, ListView):
     def get_queryset(self):
         queryset = Movie.objects.filter(
             Q(year__in=self.request.GET.getlist("year")) |
-            Q(genres__in=self.request.GET.getlist("genres"))
+            Q(genres__in=self.request.GET.getlist("genre"))
         )
         return queryset
+
+
+class JsonFilterMoviesView(ListView):
+    """Фильтр фильмов в json"""
+    def get_queryset(self):
+        queryset = Movie.objects.filter(
+            Q(year__in=self.request.GET.getlist("year")) |
+            Q(genres__in=self.request.GET.getlist("genre"))
+        ).distinct().values("title", "tagline", "url", "poster")
+        return queryset
+
+    def get(self, request, *args, **kwargs):
+        queryset = list(self.get_queryset())
+        return JsonResponse({"movies": queryset}, safe=False)
 
 
 class AddStarRating(View):
